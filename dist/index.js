@@ -29313,9 +29313,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const statusIndication_1 = __nccwpck_require__(6334);
 const gitHubIconUrl = 'https://raw.githubusercontent.com/SimonScholz/google-chat-action/main/assets/github-cat-128.png';
-const gitHubCircleIconUrl = 'https://raw.githubusercontent.com/SimonScholz/google-chat-action/main/assets/github-128-circle.png';
 const gitBranchIconUrl = 'https://raw.githubusercontent.com/SimonScholz/google-chat-action/main/assets/git-branch-128.png';
-const gitBranchCircleIconUrl = 'https://raw.githubusercontent.com/SimonScholz/google-chat-action/main/assets/git-branch-128-circle.png';
 function createCardV2Section() {
     const additionalSections = core.getInput('additionalSections');
     const additionalSectionsJson = JSON.parse(additionalSections);
@@ -29345,75 +29343,31 @@ function createDefaultCardV2Section() {
             }
         });
     }
-    const buttonArray = [
-        {
-            text: 'Go to repo',
-            icon: {
-                iconUrl: gitHubIconUrl
-            },
-            onClick: {
-                openLink: {
-                    url: `https://github.com/${repoPath}`
-                }
-            }
-        },
-        {
-            text: 'Go to action run',
-            icon: {
-                knownIcon: 'STAR'
-            },
-            onClick: {
-                openLink: {
-                    url: `https://github.com/${repoPath}/actions/runs/${github.context.runId}`
-                }
-            }
-        }
-    ];
-    if (github.context.eventName === 'push') {
-        const pushCommitUrl = `https://github.com/${repoPath}/commit/${github.context.sha}`;
-        buttonArray.push({
-            text: 'Go to commit',
-            icon: {
-                iconUrl: gitBranchIconUrl
-            },
-            onClick: {
-                openLink: {
-                    url: pushCommitUrl
-                }
-            }
-        });
-    }
-    else if (github.context.eventName === 'pull_request') {
-        const pullRequestUrl = `https://github.com/${repoPath}/pull/${github.context.issue.number}`;
-        buttonArray.push({
-            text: 'Go to pull request',
-            icon: {
-                iconUrl: gitBranchIconUrl
-            },
-            onClick: {
-                openLink: {
-                    url: pullRequestUrl
-                }
-            }
-        });
-    }
+    const repoUrl = `https://github.com/${repoPath}`;
+    const commitOrPullUrl = github.context.eventName === 'push'
+        ? `https://github.com/${repoPath}/commit/${github.context.sha}`
+        : `https://github.com/${repoPath}/pull/${github.context.issue.number}`;
+    const actionRunUrl = `https://github.com/${repoPath}/actions/runs/${github.context.runId}`;
     defaultCardV2Section[0].widgets.push({
         decoratedText: {
             startIcon: {
-                iconUrl: gitHubCircleIconUrl
+                iconUrl: gitHubIconUrl
             },
-            text: repoPath
+            text: `<a href="${repoUrl}">${repoUrl}</a>`
         }
     }, {
         decoratedText: {
             startIcon: {
-                iconUrl: gitBranchCircleIconUrl
+                iconUrl: gitBranchIconUrl
             },
-            text: github.context.ref
+            text: `Go to ${github.context.eventName === 'push' ? 'commit' : 'pull request'}: <a href="${commitOrPullUrl}">${commitOrPullUrl}</a>`
         }
     }, {
-        buttonList: {
-            buttons: buttonArray
+        decoratedText: {
+            startIcon: {
+                knownIcon: 'STAR'
+            },
+            text: `Action run: <a href="${actionRunUrl}">${actionRunUrl}</a>`
         }
     });
     return defaultCardV2Section;
